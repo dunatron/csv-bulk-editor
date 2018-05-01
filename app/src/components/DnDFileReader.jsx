@@ -166,6 +166,9 @@ class DnDFileReader extends Component {
       case "csv":
         this.processCsv(file)
         break
+      case "video":
+        this.processVideo(file)
+        break
       default:
         this.unKownError(
           "Unkown Error ",
@@ -242,6 +245,20 @@ class DnDFileReader extends Component {
     }
   }
 
+  processVideo = async (file) => {
+    var URL = window.URL || window.webkitURL
+    await this.setState({
+      type: "video",
+    })
+    // https://stackoverflow.com/questions/46880339/cant-save-uploaded-videos-blob-url-at-the-backend-server-using-ajax-call
+    // Will probably need to send DataURL version and file itself to store in state/redux
+    // Then at Upload time, we can async The files up one at a time.
+    // send entire file to server and do a file_put contents type charade.
+    // How will graphQL handle this?
+    var fileURL = URL.createObjectURL(file)
+    this.processFileData(fileURL)
+  }
+
   unKownError = (header, message) => {
     this.setState({
       error: true,
@@ -269,6 +286,7 @@ class DnDFileReader extends Component {
     let msCSVExpression = /application\/vnd\.ms-excel$/i
     let xlxsExpression =
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    let videoExpression = /video.*/
 
     if (type.match(imageExpression)) {
       return "img"
@@ -276,8 +294,8 @@ class DnDFileReader extends Component {
       return "text"
     } else if (type.match(csvExpression)) {
       return "csv"
-    } else if (type.match(msCSVExpression)) {
-      return "csv"
+    } else if (type.match(videoExpression)) {
+      return "video"
     } else if (type.match(xlxsExpression)) {
       return "xlxs"
     } else {

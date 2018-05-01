@@ -9,6 +9,7 @@ import VirtualList from 'react-tiny-virtual-list';
 import { Button, IconButton } from 'material-ui';
 import Avatar from 'material-ui/Avatar';
 import Card, { CardHeader, CardMedia, CardContent, CardActions } from 'material-ui/Card';
+import VideoPlayer from './VideoPlayer';
 import DeleteIcon from 'material-ui-icons/Delete';
 import Typography from 'material-ui/Typography';
 import moment from 'moment'
@@ -173,9 +174,17 @@ class DataObjectContent extends Component {
       case "csv":
         return this.renderCsvVirtualList(src, itemIndex)
         break
+      case "video":
+        return this.renderVideo(src, name)
+        break
       default:
         return "beware your src file cannot be displayed"
     }
+  }
+
+  renderVideo = (src, name) => {
+    console.log('render video src ', src)
+    return <VideoPlayer src={src} />
   }
 
   renderImage = (src, name) => {
