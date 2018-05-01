@@ -46,11 +46,12 @@ class TextField extends React.Component {
       border: "none",
       borderBottom: "2px solid transparent",
       outline: "none",
-      //width: "60px",
+      width: "100%",
       padding: 0,
       boxShadow: "none",
       borderRadius: "0px",
       fontSize: "16px",
+      minHeight: 32,
       fontFamily: "inherit",
       lineHeight: "inherit",
       backgroundImage: "none",
@@ -66,7 +67,7 @@ class TextField extends React.Component {
         onBlur={() => this.onBlur()}
         onFocus={() => this.onFocus()}
         className="smallInput"
-        placeholder={this.props.name}
+        placeholder={this.props.placeholder}
         value={this.props.value}
         onChange={e => this.props.onChange(e.target.value)}
       />

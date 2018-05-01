@@ -1,11 +1,22 @@
 import React, { Component } from "react"
 import PropTypes from "prop-types"
+import { withStyles } from 'material-ui/styles';
 import DnDFileReader from "./DnDFileReader"
+import DataObjectContent from './DataObjectContent'
 import TextField from "./TextField"
+import VirtualList from 'react-virtual-list';
+import { Button, IconButton } from 'material-ui';
 
 const divStyle = {
   display: "inline",
 }
+
+const styles = theme => ({
+  cardContainer: {
+    display: "flex",
+    flexWrap: "wrap"
+  },
+});
 
 const ScrollableTable = {
   display: "flex",
@@ -18,7 +29,7 @@ const TableRow = {
 }
 
 function getColName(name) {
-  return function(v) {
+  return function (v) {
     return v[name]
   }
 }
@@ -32,7 +43,7 @@ function getColName(name) {
 // }
 
 const importTextField = colName => ({ row, onChange }) => (
-  <TextField value={row[colName]} onChange={v => onChange(v, colName)} />
+  <TextField value={row[colName]} placeholder={colName} onChange={v => onChange(v, colName)} />
 )
 
 const confObj = {
@@ -55,10 +66,10 @@ const CsvConfig = v => {
 class DnDFileComponent extends Component {
   constructor(props) {
     super(props)
+    const { csvConf } = props
     this.state = {
-      dataSrc: null,
-      dataType: null,
-      csvRows: [],
+      dataObjects: [], //{ src: null, type}
+      csvConf: csvConf
     }
   }
 
@@ -69,137 +80,77 @@ class DnDFileComponent extends Component {
     if (nextState.dataSrc != this.state.dataSrc) {
       return true
     }
+    if (nextState.dataObjects != this.state.dataObjects) {
+      return true
+    }
     return false
   }
 
   render = () => {
-    const { dataSrc, dataType, csvRows } = this.state
-    console.log("Render Data", dataSrc, dataType)
-    console.log("CSV ROWS", csvRows)
+    const { dataObjects } = this.state
+
     return (
       <div style={divStyle}>
         <DnDFileReader
           event={this.props.event}
-          processData={(data, type) => this.processData(data, type)}
+          processData={(data, type, size, name, lastModified) => this.processData(data, type, size, name, lastModified)}
         />
-        {csvRows &&
-          !!csvRows.length && (
-            <div style={ScrollableTable}>{this.renderCsvRows(csvRows)}</div>
-          )}
+        {dataObjects && dataObjects.length >= 1 && <h2>{dataObjects.length} ready to upload</h2>}
+        {dataObjects && dataObjects.length >= 1 && this.renderDataObjects(dataObjects)}
       </div>
     )
   }
 
-  renderCsvRows = rows => {
-    console.log("renderCsvRows", rows)
-    const renderDatas = rows.map((row, index) => {
-      return (
-        <div key={index} style={TableRow}>
-          {Object.entries(confObj).map(([cnfKey, R]) => {
-            return (
-              <R
-                row={row}
-                onChange={(v, colName) => {
-                  console.log(v, index, colName)
-                  this.handleInputChange(index, colName, v)
-                }}
-              />
-            )
-          })}
-        </div>
-        // return (
-        //   <div key={index} style={TableRow}>
-        //     {Object.entries(v).map((v, key) => {
-        //       let colKey = v[0]
-        //       console.log("Entries data", v)
-        //       console.log("colKey", colKey)
-        //       return (
-        //         <TextField
-        //           value={v[1]}
-        //           onChange={v => {
-        //             this.handleInputChange(index, colKey, v)
-        //           }}
-        //         />
-        //       )
-        //     })}
-        //   </div>
-        // )
-      )
-    })
-    return renderDatas
-  }
-
-  handleInputChange = (index, key, val) => {
-    console.log("Handle Change", index, key, val)
-    console.log("CHANGE ROW AT INDEX & KEY ", this.state.csvRows)
-    console.log(this.state)
-    const csvRows = this.state.csvRows
-    csvRows[index][key] = val
+  handleInputChange = (objIndex, index, key, val) => {
+    const dataObjects = this.state.dataObjects
+    dataObjects[objIndex]["src"][index][key] = val
     this.setState({
-      csvRows: csvRows,
+      dataObjects: dataObjects,
     })
-
-    console.log("NEW STATE ", this.state)
+    console.log("State after edit ", dataObjects)
   }
 
-  // renderCsvData = src => {
-  //   console.log("renderCsvData", src)
-
-  //   let data = src.map((v, i) => {
-  //     return CsvConfig(v)
-  //   })
-
-  //   this.setState({
-  //     csvRows: data,
-  //   })
-  // }
-
-  renderImage = src => {
-    console.log("renderImage", src)
-    return <img src={src} height="400" />
+  renderDataObjects = (dataObjects) => {
+    return (<div className={this.props.classes.cardContainer}>
+      {dataObjects.map((data, index) => {
+        return this.dataContainer(data, index)
+      })}
+    </div>)
   }
 
-  renderDataSrc = (src, type) => {
-    if (type === "csv") {
-      return this.renderCsvData(src)
-    } else if (type === "image") {
-      return this.renderImage(src)
-    }
+  removeDataObject = (index) => {
+    let dataObjects = this.state.dataObjects
+    dataObjects.splice(index, 1);
+    this.setState({
+      dataObjects: dataObjects
+    })
   }
 
-  processData = (data, type) => {
-    if (type === "csv") {
-      //this.setCSVRows(data)
-      this.setState({
-        csvRows: data,
-      })
-    }
+  dataContainer = (data, index) => {
+    const { classes } = this.props
+    console.log('DATA CONTAINER ', data)
+    return <DataObjectContent
+      data={data}
+      csvConf={this.state.csvConf}
+      remove={(idx) => this.removeDataObject(idx)}
+      itemIndex={index}
+      handleInputChange={(objIndex, index, key, val) => this.handleInputChange(objIndex, index, key, val)} />
   }
 
-  // setCSVRows = dataSrc => {
-  //   console.log("gettinh here")
-  //   const data = dataSrc.map((v, i) => {
-  //     //return CsvConfig(v)
-  //     console.log(confObj)
-  //     return Object.entries(confObj).reduce((row, [key, type]) => {
-  //       // fn = IMPORTER_FNS[type]
-  //       // row[key] = fnOrColName(v)
+  processData = (data, type, name, size, lastModified) => {
+    console.log("process Data ", size, name, lastModified)
+    let old = this.state.dataObjects
+    old.push(this.createSrcObject(data, type, name, size, lastModified))
+    this.setState({
+      dataObjects: old
+    })
+  }
 
-  //       if (typeof fnOrColName === "string") {
-  //         row[key] = v[fnOrColName]
-  //       } else {
-  //         row[key] = fnOrColName(v)
-  //       }
-  //       return row
-  //     }, {})
-  //   })
+  createSrcObject = (src, type, name, size, lastModified) => {
+    return { src: src, type: type, size: size, name: name, lastModified: lastModified }
+  }
 
-  //   console.log("data is", data)
-
-  //   this.setState({
-  //     csvRows: data,
-  //   })
-  // }
 }
 
-export default DnDFileComponent
+export default withStyles(styles)(DnDFileComponent)
+

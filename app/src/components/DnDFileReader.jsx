@@ -25,7 +25,7 @@ class DnDFileReader extends Component {
       uploading: false,
       uploadPercent: 0,
       fileSrc: null,
-      FileType: null,
+      type: null,
       error: null,
       alertText: "",
     }
@@ -85,7 +85,10 @@ class DnDFileReader extends Component {
       uploading: false,
       uploadPercent: 0,
       DisplayFile: null,
-      FileType: null,
+      type: null,
+      size: null,
+      name: null,
+      lastModified: null,
       CSVColumns: null,
       error: null,
       alertText: "",
@@ -136,16 +139,22 @@ class DnDFileReader extends Component {
   }
 
   processFile = file => {
-    let fileType = this.getFileType(file.type)
-    let check = this.checkValidFile(fileType, file.type)
+    console.log("processFile ", file)
+    let { size, name, lastModified, type } = file
+    let fileType = this.getFileType(type)
+    let check = this.checkValidFile(fileType, type)
     if (check === false) {
       return // Stop running things
     }
+
     this.setState({
-      FileType: fileType,
+      type: fileType,
+      size: size,
+      name: name,
+      lastModified: lastModified
     })
     switch (fileType) {
-      case "image":
+      case "img":
         this.processImage(file)
         break
       case "text":
@@ -182,13 +191,13 @@ class DnDFileReader extends Component {
     }
 
     reader.onloadend = () => {
-      //this.processFileData(rawData, this.state.FileType)
       this.readPapasCsv(rawData)
     }
   }
 
-  processFileData = (data, type) => {
-    this.props.processData(data, type)
+  processFileData = (data) => {
+    const { type, size, name, lastModified } = this.state
+    this.props.processData(data, type, name, size, lastModified)
   }
 
   processCsv = file => {
@@ -206,30 +215,30 @@ class DnDFileReader extends Component {
 
   readPapasCsv = async data => {
     this.setState({
-      FileType: "csv",
+      type: "csv",
     })
     // try {
     let papasData = await processCSV(data)
-    this.processFileData(papasData, this.state.FileType)
+    this.processFileData(papasData)
     // } catch (e) {
     //this.unKownError("CSV Error", e)
     // }
   }
 
-  processText = file => {}
+  processText = file => { }
 
   processImage = async file => {
     let reader = new FileReader()
     let imgSrc
     await this.setState({
-      FileType: "image",
+      type: "img",
     })
     reader.readAsDataURL(file)
     reader.onload = () => {
       imgSrc = reader.result
     }
     reader.onloadend = () => {
-      this.processFileData(imgSrc, this.state.FileType)
+      this.processFileData(imgSrc)
     }
   }
 
@@ -240,8 +249,8 @@ class DnDFileReader extends Component {
     })
   }
 
-  checkValidFile = (fileType, extension) => {
-    if (fileType === "invalidType") {
+  checkValidFile = (type, extension) => {
+    if (type === "invalidType") {
       // reset everything and throw an error
       this.setState({
         error: true,
@@ -261,10 +270,8 @@ class DnDFileReader extends Component {
     let xlxsExpression =
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
-    console.log("type", type)
-
     if (type.match(imageExpression)) {
-      return "image"
+      return "img"
     } else if (type.match(textExpression)) {
       return "text"
     } else if (type.match(csvExpression)) {

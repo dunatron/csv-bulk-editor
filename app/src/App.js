@@ -21,6 +21,11 @@ class App extends Component {
   }
 
   render() {
+    const csvConfig = {
+      agreementID: { type: "text", colName: "Agreement ID" },
+      centreCode: { type: "text", colName: "centreCode" },
+      CPI: { type: "text", colName: "CPI" }
+    }
     return (
       <div className="App">
         <header className="App-header">
@@ -31,7 +36,7 @@ class App extends Component {
           To get started, edit <code>src/App.js</code> and save to reload.
         </p>
 
-        <DnDFileComponent />
+        <DnDFileComponent csvConf={csvConfig} />
 
         <div>
           {this.state.CsvFile &&
