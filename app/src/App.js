@@ -24,7 +24,14 @@ class App extends Component {
     const csvConfig = {
       agreementID: { type: "text", colName: "Agreement ID" },
       centreCode: { type: "text", colName: "centreCode" },
-      CPI: { type: "text", colName: "CPI" }
+      agreementKnownAs: { type: "text", colName: "Agreement Known As" },
+      cpi: { type: "text", colName: "CPI" },
+      floorCpi: { type: "text", colName: "Floor (CPI)" },
+      capCpi: { type: "text", colName: "Cap (CPI)" },
+      mixedCpi: { type: "text", colName: "Mixed (CPI)" },
+      market: { type: "text", colName: "Market" },
+      floorMarket: { type: "text", colName: "Floor (Market)" },
+      capMarket: { type: "text", colName: "Cap (Market)" },
     }
     return (
       <div className="App">

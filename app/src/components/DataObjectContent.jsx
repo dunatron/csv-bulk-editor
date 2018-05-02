@@ -21,10 +21,8 @@ import moment from 'moment'
  * importTextField is recieveing all the rows hence the [0] in the below code
  */
 const importTextField = colName => ({ row, onChange }) => {
-  console.log("1->colName:  ", colName)
-  console.log("2->row:  ", row)
   return (
-    <TextField value={row[0][colName]} placeholder={colName} onChange={v => onChange(v, colName)} />
+    <TextField value={row[colName]} placeholder={colName} onChange={v => onChange(v, colName)} />
   )
 }
 
@@ -94,39 +92,30 @@ class DataObjectContent extends Component {
   constructor(props) {
     super(props);
     const mappings = this.buildConfMap(this.props.csvConf)
-    console.log("MAPPINGS ", mappings)
-    console.log("Old Mappings ", confObj)
     this.state = {
       mappings: mappings
     }
   }
 
+  // shouldComponentUpdate(nextProps, nextState) {
+  //   // if (this.props.updateTimestamp !== nextProps.updateTimestamp) {
+  //   //   return true
+  //   // }
+  //   if (this.props.data !== nextProps.data) {
+  //     return true
+  //   }
+  //   return false
+  // }
+
   buildConfMap = (conf) => {
-    console.log("Build Map ", conf)
-
     let mappedObject = {}
-
     const mapped = Object.entries(conf).map(([key, value], index) => {
-      console.log("key ", key)
-      console.log("value ", value)
-      console.log("index ", index)
-
       let editorType
       if (value.type === "text") {
         mappedObject[key] = importTextField(value.colName)
       }
-
     })
-
     return mappedObject
-
-  }
-
-  shouldComponentUpdate(nextProps, nextState) {
-    if (this.props.data !== nextProps.data) {
-      return true
-    }
-    return false
   }
 
   bytesToSize = (bytes) => {
@@ -138,7 +127,6 @@ class DataObjectContent extends Component {
 
   render = () => {
     const { data, classes, itemIndex } = this.props
-    console.log("OUR DATA ", data)
     return (
       <Card className={classes.card}>
         <CardHeader
@@ -183,7 +171,6 @@ class DataObjectContent extends Component {
   }
 
   renderVideo = (src, name) => {
-    console.log('render video src ', src)
     return <VideoPlayer src={src} />
   }
 
@@ -197,14 +184,16 @@ class DataObjectContent extends Component {
 
   renderCsvVirtualList = (src, objIndex) => {
     const virtualWidth = ((Object.keys(this.state.mappings).length) * 180)
+    let updateTimestamp = this.props
     return <VirtualList
       width={virtualWidth}
       height={280}
+      //updateTimestamp={updateTimestamp}
       itemCount={src.length}
       itemSize={32} // Also supports variable heights (array or function getter)
       renderItem={({ index, style }) =>
         <div key={index} className={this.props.classes.virtualRow} style={style}>
-          {this.renderEditableRow(src, objIndex, index)}
+          {this.renderEditableRow(src[index], objIndex, index)}
         </div>
       }
     />
@@ -212,10 +201,8 @@ class DataObjectContent extends Component {
 
   renderEditableRow = (row, objIndex, index) => {
     const { csvConf } = this.props
-    console.log("CONF ", csvConf)
     return <div key={index} className={this.props.classes.TableRow}>
       {Object.entries(this.state.mappings).map(([cnfKey, R]) => {
-        console.log("confKey ", cnfKey)
         return (
           <R
             row={row}

@@ -69,7 +69,8 @@ class DnDFileComponent extends Component {
     const { csvConf } = props
     this.state = {
       dataObjects: [], //{ src: null, type}
-      csvConf: csvConf
+      csvConf: csvConf,
+      updateTimestamp: Date.now()
     }
   }
 
@@ -106,6 +107,7 @@ class DnDFileComponent extends Component {
     dataObjects[objIndex]["src"][index][key] = val
     this.setState({
       dataObjects: dataObjects,
+      updateTimestamp: Date.now()
     })
     console.log("State after edit ", dataObjects)
   }
@@ -131,6 +133,7 @@ class DnDFileComponent extends Component {
     console.log('DATA CONTAINER ', data)
     return <DataObjectContent
       data={data}
+      updateTimestamp={this.state.updateTimestamp}
       csvConf={this.state.csvConf}
       remove={(idx) => this.removeDataObject(idx)}
       itemIndex={index}
